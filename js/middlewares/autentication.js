@@ -23,6 +23,7 @@ function hasFields(fields) {
         for (let field of fields) {
             if (!req.body[field]) {
                 res.send(`Missing required field "${field}"`);
+                return;
             }
         }
         next();
