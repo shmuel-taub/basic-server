@@ -5,12 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 function auth(req, res, next) {
-    let { name, token } = req.body;
+    let { token } = req.body;
     try {
         let decoded = jsonwebtoken_1.default.verify(token, process.env.SECRET);
-        if (decoded.name !== req.body.name)
-            throw new Error('This is not your token');
-        req.tokenVal = decoded;
+        // if (decoded.name !== req.body.name)
+        //     throw new Error('This is not your token');
+        req.body.tokenVal = decoded;
         next();
         return;
     }
@@ -21,8 +21,13 @@ function auth(req, res, next) {
 function hasFields(fields) {
     function middleWare(req, res, next) {
         for (let field of fields) {
-            if (!req.body[field]) {
-                res.send(`Missing required field "${field}"`);
+            if (!req.body[field.name]) {
+                res.status(400).send(`Missing required field "${field}"`);
+                return;
+            }
+            if (typeof req.body[field.name] !== field.type) {
+                res.status(400).send(`expected type ${field.type} for ${field.name}
+                got ${typeof req.body[field.name]} instead`);
                 return;
             }
         }
